@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Timezone</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap');
+
+    :root {
+      --accent: #00ffff;
+      --bg-dark: radial-gradient(circle at center, #0f2027, #203a43, #2c5364);
+      --bg-light: radial-gradient(circle at center, #e0eafc, #cfdef3);
+      --watch-dark: linear-gradient(145deg, #0a0f13, #1e2b33);
+      --watch-light: linear-gradient(145deg, #e0eafc, #d5e0f0);
+      --text-dark: #00ffff;
+      --text-light: #003cff;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: var(--bg-dark);
+      font-family: 'Orbitron', sans-serif;
+      transition: background 0.8s ease;
+      overflow: hidden;
+    }
+
+    body.light {
+      background: var(--bg-light);
+    }
+
+    .clock-container {
+      position: relative;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: var(--watch-dark);
+      box-shadow:
+        inset 0 20px 60px rgba(0, 255, 255, 0.15),
+        0 20px 60px rgba(0,255,255,0.3),
+        0 0 100px rgba(0,255,255,0.2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.8s ease, box-shadow 0.8s ease;
+    }
+
+    body.light .clock-container {
+      background: var(--watch-light);
+      box-shadow:
+        inset 0 20px 60px rgba(0, 89, 255, 0.15),
+        0 20px 60px rgba(0,89,255,0.3),
+        0 0 100px rgba(0,89,255,0.2);
+    }
+
+    .face {
+      position: relative;
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      background: radial-gradient(circle at center, rgba(255,255,255,0.05), rgba(0,0,0,0.8));
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      box-shadow: inset 0 10px 30px rgba(0,0,0,0.7);
+    }
+
+    .marks {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      z-index: 1;
+    }
+
+    .mark {
+      position: absolute;
+      left: 50%;
+      top: 8px;
+      width: 4px;
+      height: 18px;
+      background: rgba(0,255,255,0.6);
+      transform-origin: center 142px;
+      border-radius: 2px;
+      box-shadow: 0 0 12px rgba(0,255,255,0.3);
+      transition: background 0.8s ease, box-shadow 0.8s ease;
+    }
+
+    body.light .mark {
+      background: rgba(0,89,255,0.8);
+      box-shadow: 0 0 12px rgba(0,89,255,0.5);
+    }
+
+    /* 12 Hour Marks */
+    .mark:nth-child(1)  { transform: rotate(0deg) translateX(-50%); }
+    .mark:nth-child(2)  { transform: rotate(30deg) translateX(-50%); }
+    .mark:nth-child(3)  { transform: rotate(60deg) translateX(-50%); }
+    .mark:nth-child(4)  { transform: rotate(90deg) translateX(-50%); }
+    .mark:nth-child(5)  { transform: rotate(120deg) translateX(-50%); }
+    .mark:nth-child(6)  { transform: rotate(150deg) translateX(-50%); }
+    .mark:nth-child(7)  { transform: rotate(180deg) translateX(-50%); }
+    .mark:nth-child(8)  { transform: rotate(210deg) translateX(-50%); }
+    .mark:nth-child(9)  { transform: rotate(240deg) translateX(-50%); }
+    .mark:nth-child(10) { transform: rotate(270deg) translateX(-50%); }
+    .mark:nth-child(11) { transform: rotate(300deg) translateX(-50%); }
+    .mark:nth-child(12) { transform: rotate(330deg) translateX(-50%); }
+
+    .ring-animation {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      border: 6px solid transparent;
+      border-top: 6px solid var(--accent);
+      opacity: 0.4;
+      z-index: 2;
+      transition: transform 0.2s linear, border-color 0.8s ease;
+    }
+
+    body.light .ring-animation {
+      border-top-color: var(--text-light);
+      opacity: 0.5;
+    }
+
+    .app-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-dark);
+      text-shadow: 0 0 15px var(--text-dark), 0 0 25px var(--text-dark);
+      margin-bottom: 10px;
+      transition: color 0.8s ease, text-shadow 0.8s ease;
+    }
+
+    body.light .app-title {
+      color: var(--text-light);
+      text-shadow: 0 0 15px var(--text-light), 0 0 25px var(--text-light);
+    }
+
+    .clock {
+      z-index: 3;
+      font-size: 56px;
+      color: var(--text-dark);
+      text-shadow: 0 0 20px var(--text-dark), 0 0 40px var(--text-dark);
+      transition: color 0.8s ease, text-shadow 0.8s ease;
+    }
+
+    body.light .clock {
+      color: var(--text-light);
+      text-shadow: 0 0 20px var(--text-light), 0 0 35px var(--text-light);
+    }
+
+    .date {
+      margin-top: 10px;
+      font-size: 18px;
+      color: #ffffffcc;
+      text-shadow: 0 0 10px rgba(0,255,255,0.2);
+      transition: color 0.8s ease, text-shadow 0.8s ease;
+    }
+
+    body.light .date {
+      color: #003cffcc;
+      text-shadow: 0 0 10px rgba(0,89,255,0.2);
+    }
+
+    .controls {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 8px 15px;
+      font-size: 15px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      background: linear-gradient(45deg, #00ffff, #0099ff);
+      color: #fff;
+      font-family: 'Orbitron', sans-serif;
+      box-shadow: 0 0 15px rgba(0,255,255,0.3);
+      transition: transform 0.3s, box-shadow 0.3s, background 0.8s ease;
+    }
+
+    .btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 20px rgba(0,255,255,0.5);
+    }
+
+    body.light .btn {
+      background: linear-gradient(45deg, #0059ff, #00bfff);
+      color: #fff;
+      box-shadow: 0 0 15px rgba(0,89,255,0.5);
+    }
+
+    .center-cap {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: rgba(0,0,0,0.6);
+      border-radius: 50%;
+      z-index: 5;
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <button class="btn" id="themeBtn">🌙 Dark Mode</button>
+    <button class="btn" id="soundBtn">🔇 Mute</button>
+  </div>
+
+  <div class="clock-container">
+    <div class="face">
+      <div class="marks">
+        <div class="mark"></div><div class="mark"></div><div class="mark"></div>
+        <div class="mark"></div><div class="mark"></div><div class="mark"></div>
+        <div class="mark"></div><div class="mark"></div><div class="mark"></div>
+        <div class="mark"></div><div class="mark"></div><div class="mark"></div>
+      </div>
+
+      <div class="ring-animation" id="ring"></div>
+      <div class="app-title">Timezone</div>
+      <div class="clock" id="clock">00:00:00</div>
+      <div class="date" id="date"></div>
+      <div class="center-cap"></div>
+    </div>
+  </div>
+
+  <script>
+    let isMuted = true;
+
+    function playTickSound() {
+      if (isMuted) return;
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+      oscillator.type = "square";
+      oscillator.frequency.setValueAtTime(1000, ctx.currentTime);
+      gain.gain.setValueAtTime(0.05, ctx.currentTime);
+      oscillator.connect(gain);
+      gain.connect(ctx.destination);
+      oscillator.start();
+      oscillator.stop(ctx.currentTime + 0.05);
+    }
+
+    function updateClock() {
+      const now = new Date();
+      let h = now.getHours();
+      let m = now.getMinutes();
+      let s = now.getSeconds();
+
+      h = h < 10 ? "0" + h : h;
+      m = m < 10 ? "0" + m : m;
+      s = s < 10 ? "0" + s : s;
+
+      document.getElementById("clock").textContent = `${h}:${m}:${s}`;
+
+      const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const dayName = days[now.getDay()];
+      const month = months[now.getMonth()];
+      const dateNum = now.getDate();
+      const year = now.getFullYear();
+
+      document.getElementById("date").textContent = `${dayName}, ${month} ${dateNum}, ${year}`;
+
+      const deg = s * 6;
+      document.getElementById("ring").style.transform = `rotate(${deg}deg)`;
+
+      playTickSound();
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Theme toggle
+    const themeBtn = document.getElementById("themeBtn");
+    themeBtn.addEventListener("click", () => {
+      document.body.classList.toggle("light");
+      themeBtn.textContent = document.body.classList.contains("light")
+        ? "☀️ Light Mode"
+        : "🌙 Dark Mode";
+    });
+
+    // Sound toggle
+    const soundBtn = document.getElementById("soundBtn");
+    soundBtn.addEventListener("click", () => {
+      isMuted = !isMuted;
+      soundBtn.textContent = isMuted ? "🔇 Mute" : "🔊 Sound On";
+    });
+  </script>
+</body>
+</html>
